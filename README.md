@@ -13,7 +13,7 @@ The prebuild image is already available for this repository in [DockerHub](https
 ```docker-compose.yml
 version: '3.8'
 services:
-  tcg-rag:
+  openai-rag:
     # build:
     #   context: .
     #   dockerfile: Dockerfile
