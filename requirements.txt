@@ -1,0 +1,5 @@
+openai==1.25.2
+Elasticsearch==8.10.1
+fastapi==0.111.0
+numpy==1.24.4
+aiohttp==3.9.5

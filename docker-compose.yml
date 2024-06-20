@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  tcg-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5400:5400"
+    image: sahasoumadip/openai-rag:1.2
+    container_name: RAG_Backend
+    environment:
+      - OPENAI_API_KEY
+      - llm_model_name
+      - embedding_model_name
+      - VectorDB_HOST
+      - VectorDB_INDEX
+      - VectorDB_USER_NAME
+      - VectorDB_password
+    command: "--workers 4"
