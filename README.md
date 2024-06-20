@@ -42,10 +42,13 @@ Simple RAG system consists of multiple steps:
 2. Create embeddings of the stand-alone query to retrieve the `top_k` (DEFAULT=5) document from the vector database, in our case Elasticsearch, using cosine-similarity.
 3. After retrieving the relevant documents, we will pass the user's standalone question with the text of the documents as context to generate the answer.
 4. Using the retrieved documents we can also provide the documents as reference for the user from which the answer is generated.
-5. There is one more additional parameter which we can pass from the API request body, to get the details of all the intermediate steps, with addition of a scoring method to evaluate the generated answer.
+5. There is one more additional parameter `developer_details` which we can pass as `true` from the API request body, to get the details of all the intermediate steps, with addition of a scoring method to evaluate the generated answer.
 
     - The function [evaluate_response](./app.py#71) uses the generated answer to reverse-engineer three different versions of original the query using LLM. Then we create embedding of these generated queries along side the original query and calculate the cosine-similarity of these generated queries with the original query. After taking average of the similarity scores we get the final score. Idealy if the generated_answer is well versed and complete, LLM should be able to reverse-engineer the query accurately. Hence the similarity-score will be very close to 1. You can read more about it in [here](https://docs.ragas.io/en/latest/concepts/metrics/answer_relevance.html).
-    
+    - This returns the number of tokens used to generate the response.
+    - The stand-alone query to retrieve the documents.
+    - The `top_k` documents along with their similarity score.
+    - The [`confidence_score`](./code/llm.py#16) which is the summation of log probability (in percentage) of all the tokens. You can find more about it [here](https://ai.plainenglish.io/mastering-gpt-3-the-mathematics-of-logprobs-for-ruby-devs-1eb55fc1326)
 
 ## Future Features
-This version of the openai-RAG-Backend is going to add streaming and more features for the developers (i.e. Logger handling etc.).
+This version of the openai-RAG-Backend is going to add streaming and more features for the developers (i.e. Logger handling, rate-limit handling in API calls etc.) in it's next versions.
