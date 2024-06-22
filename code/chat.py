@@ -93,3 +93,35 @@ class ChatBot():
             "docs": docs,
             "confidence_score": confidence_score
         }
+
+    async def stream(self, query: str, context: str, **kwds):
+        response = await self.llm.generate(
+            query,
+            system_template=self.system_template.format_template(
+                context=context
+            ),
+            temperature=kwds.get('temperature', 0.0),
+            seed=kwds.get('seed', 1),
+            logprobs=kwds.get('logprobs', True),
+            stream=True
+        )
+
+        async for chunk in response:
+            if chunk.choices[0].delta.content:
+                yield "data: " + chunk.choices[0].delta.content + "\n\n"
+            else:
+                yield "data: \n\n"
+
+    async def build_context(self, query: str, chats: List[Dict[str, str]] = [], **kwds):
+        if len(chats) > 0:
+            new_query = await self.get_standalone_query(query, chats)
+        else:
+            new_query = query
+        docs = await self.vector_db.get_docs(
+            new_query, self.embedding_model, top_docs=kwds.get("top_docs", 5)
+        )
+        return {
+            "query": query,
+            "stand_alone_query": new_query,
+            "docs": docs
+        }

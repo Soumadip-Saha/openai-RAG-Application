@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 from typing import List, Dict, Any, Union
@@ -29,6 +31,29 @@ class DevChatResponse(BaseModel):
     confidence_score: float
     response_score: float
     token_usage: int
+
+
+# class StreamInput(BaseModel):
+#     query: str
+#     chats: List[Dict[str, str]]
+#     userId: str
+
+class StreamInput(BaseModel):
+    context: str
+    query: str
+
+
+class BuildContextInput(BaseModel):
+    query: str
+    chats: List[Dict[str, str]]
+    userId: str
+
+
+class BuildContextOutput(BaseModel):
+    query: str
+    stand_alone_query: str
+    docs: List[Dict[str, str | float]]
+    context: str
 
 
 def load_config() -> Dict:
@@ -66,6 +91,14 @@ async def get_chatbot(app: FastAPI):
 
 
 app = FastAPI(lifespan=get_chatbot)
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 async def evaluate_response(
@@ -106,36 +139,79 @@ def process_output(output: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+@app.post("/stream_ans")
+async def stream_data(request: StreamInput):
+    # try:
+    output = await chatbot.stream(
+        query=request.query, chats=request.chats
+    )
+    print(f"Docs: {output['docs']}",
+          end="\n\n------------------------------------\n\n")
+    print(f"Stand Alone Query: {output['stand_alone_query']}",
+          end="\n\n--------------------------------------\n\n")
+    print(f"Response type: {type(output['response'])}")
+    async for chunk in output["response"]:
+        print(chunk.choices[0].delta.content, end="")
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/build_context", response_model=BuildContextOutput)
+async def build_context(request: BuildContextInput):
+    try:
+        response = await chatbot.build_context(
+            query=request.query, chats=request.chats
+        )
+        response["context"] = chatbot.create_context(response["docs"])
+        return BuildContextOutput(
+            query=response["query"],
+            stand_alone_query=response["stand_alone_query"],
+            docs=response["docs"],
+            context=response["context"],
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/stream", response_model=str)
+async def stream(request: StreamInput):
+    return StreamingResponse(chatbot.stream(query=request.query, context=request.context), media_type="text/event-stream")
+
+
 @app.post("/generate_ans", response_model=Union[ChatResponse, DevChatResponse])
 async def chat_endpoint(
     request: ChatRequest
 ):
-    try:
-        if request.developer_details:
-            output = await chatbot(
-                query=request.query, chats=request.chats,
-                developer_details=request.developer_details
-            )
-            answer = output["response"].choices[0].message.content
-            query = request.query
-            response_score = await evaluate_response(query, answer, chatbot)
-            return DevChatResponse(
-                answer=answer,
-                query=query,
-                stand_alone_query=output["stand_alone_query"],
-                docs=output["docs"],
-                confidence_score=output["confidence_score"],
-                response_score=response_score,
-                token_usage=output["token_usage"]
-            )
-        else:
-            output = await chatbot(query=request.query, chats=request.chats)
-            response = process_output(output=output)
-            return ChatResponse(
-                answer=response["answer"],
-                query=request.query,
-                references=response["references"],
-                userId=request.userId
-            )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # try:
+    if request.developer_details:
+        output = await chatbot(
+            query=request.query, chats=request.chats,
+            developer_details=request.developer_details
+        )
+        answer = output["response"].choices[0].message.content
+        query = request.query
+        response_score = await evaluate_response(query, answer, chatbot)
+        return DevChatResponse(
+            answer=answer,
+            query=query,
+            stand_alone_query=output["stand_alone_query"],
+            docs=output["docs"],
+            confidence_score=output["confidence_score"],
+            response_score=response_score,
+            token_usage=output["token_usage"]
+        )
+    else:
+        output = await chatbot(query=request.query, chats=request.chats)
+        response = process_output(output=output)
+        return ChatResponse(
+            answer=response["answer"],
+            query=request.query,
+            references=response["references"],
+            userId=request.userId
+        )
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=5400)
