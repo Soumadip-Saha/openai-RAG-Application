@@ -2,8 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Chat, Message } from "@/types/chat-types";
 import Markdown from "markdown-to-jsx";
-import { buildContext } from "@/utils/functions";
+import { buildContext, getRelevanceScore } from "@/utils/functions";
 import Modal from "./Modal";
+import DisplayMessage from "./DisplayMessage";
+import Spinner from "./Spinner";
 
 interface ChatAreaProps {
 	currentChat: Chat | null;
@@ -14,7 +16,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 	const [isStreaming, setIsStreaming] = useState(false);
 	const [streamingContent, setStreamingContent] = useState("");
 	const [modalContent, setModalContent] = useState<string | null>(null);
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [loadingText, setLoadingText] = useState("Loading...");
 
 	const messageRef = useRef<HTMLInputElement>(null);
@@ -30,10 +32,14 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 
 	const streamQueryResponse = async (userMessage: string) => {
 		try {
+			onSendMessage({ role: "user", content: userMessage });
+
+			setLoading(true);
+			setLoadingText("Building Context...");
 			const context = await buildContext(userMessage, currentChat!);
 
+			setLoading(false);
 			setIsStreaming(true);
-			onSendMessage({ role: "user", content: userMessage });
 
 			let fullResponse = "";
 
@@ -67,6 +73,17 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					setIsStreaming(false);
 				},
 			});
+
+			setLoading(true);
+			setLoadingText("Evaluating Response...");
+			const relevance = await getRelevanceScore(
+				context.stand_alone_query,
+				fullResponse
+			);
+
+			setLoading(false);
+
+			alert(relevance.response_score);
 		} catch (error) {
 			console.error("Failed to fetch from server", error);
 			setIsStreaming(false);
@@ -110,39 +127,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 				className="flex-1 overflow-y-auto p-4 space-y-4"
 			>
 				{currentChat.messages.map((message, index) => (
-					<div
+					<DisplayMessage
 						key={index}
-						className={`flex ${
-							message.role === "user"
-								? "justify-end"
-								: "justify-start"
-						}`}
-					>
-						<Markdown
-							className={`markdown-content max-w-[83%] px-4 py-2 rounded-lg ${
-								message.role === "user"
-									? "bg-blue-900"
-									: "bg-[#131313] text-gray-300"
-							}`}
-						>
-							{message.content}
-						</Markdown>
-						{message.role === "assistant" && message.references && (
-							<div className="flex flex-wrap mt-2 gap-2">
-								{Object.entries(message.references).map(
-									([key, value], i) => (
-										<button
-											key={i}
-											onClick={() => openModal(value)}
-											className="px-2 py-1 bg-gray-700 text-white text-xs rounded-full hover:bg-gray-600 transition duration-200"
-										>
-											{key}
-										</button>
-									)
-								)}
-							</div>
-						)}
-					</div>
+						message={message}
+						openModal={openModal}
+					/>
 				))}
 				{streamingContent && (
 					<div className="flex justify-start">
@@ -150,6 +139,12 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 							{streamingContent}
 						</Markdown>
 					</div>
+				)}
+				{loading && (
+					<p className="flex w-fit mx-auto pt-8">
+						<Spinner className="mr-4 w-8 h-8 self-center" />
+						{loadingText}
+					</p>
 				)}
 			</div>
 			<form onSubmit={handleSubmit} className="p-4 bg-zinc-900">

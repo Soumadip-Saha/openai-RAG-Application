@@ -23,3 +23,9 @@ export interface BuildContextOutput {
 	context: string;
 	userId: string;
 }
+
+export interface EvaluateResponseOutput {
+	similar_queries: string[];
+	response_score: number;
+	userId: string;
+}
