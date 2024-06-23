@@ -75,12 +75,11 @@ h6 {
 }
 
 .glassmorphism {
-	background: rgba(255, 255, 255, 0.1);
-	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.5);
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
-	border: 1px solid rgba(255, 255, 255, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .markdown-content {
@@ -96,10 +95,12 @@ h6 {
 	}
 
 	pre {
-		background-color: beige;
-		color: black;
+		/* Embed box effect */
+		box-shadow: 0 0 0 1px rgb(0 0 0 / 10%), 0 0 0 rgb(0 0 0 / 10%);
+		background-color: rgba(0, 0, 0, 0.9);
+		color: #fff;
 		padding: 0.2rem 1rem;
+		margin: 1rem 0;
 		border-radius: 8px;
-		margin: 0.5rem 0;
 	}
 }

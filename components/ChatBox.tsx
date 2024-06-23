@@ -46,7 +46,7 @@ const ChatBox: React.FC = () => {
 	const currentChat = chats.find((chat) => chat.id === currentChatId) || null;
 
 	return (
-		<div className="flex h-screen bg-gray-900 text-white">
+		<div className="flex h-screen bg-[#1c1c1c] text-white">
 			<Sidebar
 				chats={chats}
 				currentChatId={currentChatId}

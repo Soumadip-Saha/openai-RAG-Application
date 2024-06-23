@@ -31,6 +31,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 				body: JSON.stringify({
 					query: userMessage,
 					context: testContext,
+					userId: "test",
 				}),
 				onmessage(event) {
 					const chunk = event.data === "" ? " \n" : event.data;
@@ -101,8 +102,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 						<Markdown
 							className={`markdown-content max-w-[83%] px-4 py-2 rounded-lg ${
 								message.role === "user"
-									? "bg-blue-500"
-									: "bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-sm"
+									? "bg-blue-900"
+									: "bg-[#131313] text-gray-300"
 							}`}
 						>
 							{message.content}
@@ -111,28 +112,25 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 				))}
 				{streamingContent && (
 					<div className="flex justify-start">
-						<Markdown className="markdown-content max-w-[83%] px-4 py-2 rounded-lg bg-gray-700 bg-opacity-50 backdrop-filter backdrop-blur-sm">
+						<Markdown className="markdown-content max-w-[83%] px-4 py-2 rounded-lg bg-[#131313] text-gray-300">
 							{streamingContent}
 						</Markdown>
 					</div>
 				)}
 			</div>
-			<form
-				onSubmit={handleSubmit}
-				className="p-4 bg-gray-800 bg-opacity-50 backdrop-filter backdrop-blur-lg"
-			>
+			<form onSubmit={handleSubmit} className="p-4 bg-zinc-900">
 				<div className="flex space-x-2">
 					<input
 						type="text"
 						ref={messageRef}
-						className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-white disabled:opacity-50"
+						className="flex-1 px-4 py-2 bg-zinc-800 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-700 text-white disabled:opacity-50"
 						placeholder="Type a message..."
 						disabled={isStreaming}
 						required
 					/>
 					<button
 						type="submit"
-						className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200 disabled:pointer-events-none disabled:opacity-50"
+						className="px-4 py-2 bg-green-900 text-sm text-white rounded-lg hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-800 transition duration-200 disabled:pointer-events-none disabled:opacity-50"
 						disabled={isStreaming}
 					>
 						Send

@@ -38,11 +38,17 @@ const Sidebar: React.FC<SidebarProps> = ({
 		}
 	};
 
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter") {
+			finishEditingChat();
+		}
+	};
+
 	return (
-		<div className="w-64 p-4 overflow-y-auto glassmorphism">
+		<div className="w-64 p-4 text-sm overflow-y-auto glassmorphism">
 			<button
 				onClick={onCreateNewChat}
-				className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg mb-4 transition duration-200"
+				className="w-full py-2 px-4 bg-emerald-900 hover:bg-emerald-800 rounded-lg mb-4 transition duration-200"
 			>
 				New Chat
 			</button>
@@ -53,6 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 							ref={editTitleRef}
 							defaultValue={chat.title}
 							onBlur={finishEditingChat}
+							onKeyDown={handleKeyDown}
 							className="w-full bg-gray-700 bg-opacity-60 px-2 py-1 rounded"
 							autoFocus
 						/>
@@ -60,7 +67,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 						<div className="flex items-center">
 							<div
 								onClick={() => onSelectChat(chat.id)}
-								className={`flex-grow p-2 rounded-lg cursor-pointer ${
+								className={`flex-grow p-2 pl-4 rounded-lg cursor-pointer ${
 									currentChatId === chat.id
 										? "bg-gray-700 bg-opacity-60"
 										: "hover:bg-gray-700 hover:bg-opacity-60"
