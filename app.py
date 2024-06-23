@@ -7,9 +7,6 @@ from typing import List, Dict, Any, Union
 from code.chat import ChatBot
 import numpy as np
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
-
-load_dotenv()
 
 
 class ChatRequest(BaseModel):
