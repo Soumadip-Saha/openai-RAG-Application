@@ -42,7 +42,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 
 			let fullResponse = "";
 
-			await fetchEventSource("http://localhost:8000/stream", {
+			await fetchEventSource(process.env.SERVER_URL + "/stream", {
 				method: "POST",
 				headers: {
 					Accept: "text/event-stream",
@@ -91,6 +91,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 		} catch (error) {
 			console.error("Failed to fetch from server", error);
 			setIsStreaming(false);
+			setLoading(false);
+			alert("Failed to fetch from server");
 		}
 	};
 

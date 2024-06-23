@@ -9,13 +9,16 @@ export const buildContext = async (query: string, currentChat: Chat) => {
 	let chats = convertChatToQA(currentChat);
 
 	try {
-		const response = await fetch("http://localhost:8000/build_context", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({ query, chats, userId: "test" }),
-		});
+		const response = await fetch(
+			process.env.SERVER_URL + "/build_context",
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ query, chats, userId: "test" }),
+			}
+		);
 
 		if (!response.ok) {
 			throw new Error("Failed to build context");
@@ -35,7 +38,7 @@ export const getRelevanceScore = async (
 ) => {
 	try {
 		const response = await fetch(
-			"http://localhost:8000/evaluate_response",
+			process.env.SERVER_URL + "/evaluate_response",
 			{
 				method: "POST",
 				headers: {
