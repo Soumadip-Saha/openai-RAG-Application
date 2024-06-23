@@ -16,7 +16,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 	const [isStreaming, setIsStreaming] = useState(false);
 	const [streamingContent, setStreamingContent] = useState("");
 	const [modalContent, setModalContent] = useState<string | null>(null);
-	const [loading, setLoading] = useState(true);
+	const [loading, setLoading] = useState(false);
 	const [loadingText, setLoadingText] = useState("Loading...");
 
 	const messageRef = useRef<HTMLInputElement>(null);
@@ -38,7 +38,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 			setLoadingText("Building Context...");
 			const context = await buildContext(userMessage, currentChat!);
 
-			setLoading(false);
 			setIsStreaming(true);
 
 			let fullResponse = "";
@@ -55,6 +54,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					userId: "test",
 				}),
 				onmessage(event) {
+					setLoading(false);
 					const chunk = event.data === "" ? " \n" : event.data;
 					fullResponse += chunk;
 					setStreamingContent(fullResponse);
