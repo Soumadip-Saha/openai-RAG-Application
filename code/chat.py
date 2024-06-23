@@ -16,10 +16,9 @@ DEFAULT_CHAT_TEMPLATE = PromptTemplate(
 )
 
 DEFAULT_SYSTEM_TEMPLATE = PromptTemplate(
-    "Use the following pieces of context to answer the user's "
-    "question. In case if you don't know the answer or the question is "
-    "outside the context, don't try to make up an answer.\n----------------"
-    "{context}",
+    "You are an AI assistant. You are given a context and your knowledge is only limited to that context. Whenever you are asked a question, you should answer that question based on the context. If you are not able to generate the answer based on the context, you must always response this exact phrase: 'Sorry could not generate an answer. Please rephrase the question and ask again.'"
+    "\n----------------\n"
+    "Context: {context}",
     input_variables=["context"]
 )
 
@@ -92,4 +91,36 @@ class ChatBot():
             "token_usage": response.usage.total_tokens,
             "docs": docs,
             "confidence_score": confidence_score
+        }
+
+    async def stream(self, query: str, context: str, **kwds):
+        response = await self.llm.generate(
+            query,
+            system_template=self.system_template.format_template(
+                context=context
+            ),
+            temperature=kwds.get('temperature', 0.0),
+            seed=kwds.get('seed', 1),
+            logprobs=kwds.get('logprobs', True),
+            stream=True
+        )
+
+        async for chunk in response:
+            if chunk.choices[0].delta.content:
+                yield "data: " + chunk.choices[0].delta.content + "\n\n"
+            else:
+                yield "data: \n\n"
+
+    async def build_context(self, query: str, chats: List[Dict[str, str]] = [], **kwds):
+        if len(chats) > 0:
+            new_query = await self.get_standalone_query(query, chats)
+        else:
+            new_query = query
+        docs = await self.vector_db.get_docs(
+            new_query, self.embedding_model, top_docs=kwds.get("top_docs", 5)
+        )
+        return {
+            "query": query,
+            "stand_alone_query": new_query,
+            "docs": docs
         }
