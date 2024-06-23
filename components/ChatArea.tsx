@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Chat, Message } from "@/types/chat-types";
-import { testContext } from "@/utils/data";
 import Markdown from "markdown-to-jsx";
+import { buildContext } from "@/utils/functions";
+import Modal from "./Modal";
 
 interface ChatAreaProps {
 	currentChat: Chat | null;
@@ -12,16 +13,30 @@ interface ChatAreaProps {
 const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 	const [isStreaming, setIsStreaming] = useState(false);
 	const [streamingContent, setStreamingContent] = useState("");
+	const [modalContent, setModalContent] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [loadingText, setLoadingText] = useState("Loading...");
+
 	const messageRef = useRef<HTMLInputElement>(null);
 	const chatWindowRef = useRef<HTMLDivElement>(null);
 
+	const openModal = (content: string) => {
+		setModalContent(content);
+	};
+
+	const closeModal = () => {
+		setModalContent(null);
+	};
+
 	const streamQueryResponse = async (userMessage: string) => {
-		setIsStreaming(true);
-		onSendMessage({ role: "user", content: userMessage });
-
-		let fullResponse = "";
-
 		try {
+			const context = await buildContext(userMessage, currentChat!);
+
+			setIsStreaming(true);
+			onSendMessage({ role: "user", content: userMessage });
+
+			let fullResponse = "";
+
 			await fetchEventSource("http://localhost:8000/stream", {
 				method: "POST",
 				headers: {
@@ -29,8 +44,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					query: userMessage,
-					context: testContext,
+					query: context.stand_alone_query,
+					context: context.context,
 					userId: "test",
 				}),
 				onmessage(event) {
@@ -39,7 +54,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					setStreamingContent(fullResponse);
 				},
 				onclose() {
-					onSendMessage({ role: "assistant", content: fullResponse });
+					onSendMessage({
+						role: "assistant",
+						content: fullResponse,
+						references: context.references,
+					});
 					setStreamingContent("");
 					setIsStreaming(false);
 				},
@@ -108,6 +127,21 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 						>
 							{message.content}
 						</Markdown>
+						{message.role === "assistant" && message.references && (
+							<div className="flex flex-wrap mt-2 gap-2">
+								{Object.entries(message.references).map(
+									([key, value], i) => (
+										<button
+											key={i}
+											onClick={() => openModal(value)}
+											className="px-2 py-1 bg-gray-700 text-white text-xs rounded-full hover:bg-gray-600 transition duration-200"
+										>
+											{key}
+										</button>
+									)
+								)}
+							</div>
+						)}
 					</div>
 				))}
 				{streamingContent && (
@@ -137,6 +171,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					</button>
 				</div>
 			</form>
+			{modalContent && (
+				<Modal content={modalContent} onClose={closeModal} />
+			)}
 		</div>
 	);
 };
