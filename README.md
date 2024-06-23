@@ -130,7 +130,7 @@ There are total of 4 api-endpoints present in the entire application.
 
   The response consists of three parameters
     - `similar_queries` LLM genereated queries which will be used to evaluate the response. This is a list of strings.
-    - `answer` The generated answer which will be evaluated. This is a string.
+    - `response_score` The score of the answer in range of 0 to 1.
     - `userId` The unique id for each user. This is also string.
 
 - `/generate_ans` This endpoint does all the steps but doesn't provide streaming response. This endpoint request must contain:
@@ -154,8 +154,10 @@ There are total of 4 api-endpoints present in the entire application.
     - `references` The list of documents which were used to generate the answer. This is a list of string of the file names.
     - `userId` The unique id for each user. This is also string.
     - `stand_alone_query` This is the LLM generated stand alone question from the chat history to retrieve the documents. This is returned only when the `developer_details` is set to `true`. This is a string.
-    - `docs` These are the documents which is mostly relevant to the user's query. This is a list of dictionaries.
-    - `confidence_score` This is a floating point number. You can read more about it [here](#code-transperancy)
+    - `docs` These are the documents which is mostly relevant to the user's query. This is returned only when the `developer_details` is set to `true`. This is a list of dictionaries.
+    - `confidence_score` You can read more about it [here](#code-transperancy). This is returned only when the `developer_details` is set to `true`. This is a floating point number
+    - `response_score` The score of the answer in range of 0 to 1. This is returned only when the `developer_details` is set to `true`. This is a floating point number.
+    - `token_usage` The number of tokens used to generate the final answer. This is returned only when the `developer_details` is set to `true`. This is an integer.
 
 ## Scaling the application and load tolerance
 The application is written in FastAPI and supports asynchronous process to run concurrent requests. We have tested the backend upto 100 concurrent users with average 14 seconds latency for complete answer generation. The [DockerFile](./Dockerfile) uses `uvicorn` to run the application in the container. The number of workers are also configurable in the container using the `docker-compose.yml` file for different system hardwares, enabling more scalability and reducing latency.
@@ -176,4 +178,4 @@ Simple RAG system consists of multiple steps:
     - The [`confidence_score`](./code/llm.py#16) which is the summation of log probability (in percentage) of all the tokens. You can find more about it [here](https://ai.plainenglish.io/mastering-gpt-3-the-mathematics-of-logprobs-for-ruby-devs-1eb55fc1326)
 
 ## Future Features
-This version of the openai-RAG-Backend is going to add streaming and more features for the developers (i.e. Logger handling, rate-limit handling in API calls etc.) in it's next versions.
+This version of the openai-RAG-Backend is going to add Logger handling and more features for the developers (i.e. rate-limit handling in API calls etc.) in it's next versions.
