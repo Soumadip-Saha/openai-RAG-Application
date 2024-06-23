@@ -60,17 +60,14 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					setStreamingContent(fullResponse);
 				},
 				onclose() {
-					onSendMessage({
-						role: "assistant",
-						content: fullResponse,
-						references: context.references,
-					});
-					setStreamingContent("");
-					setIsStreaming(false);
+					console.log("Stream closed");
+
+					// setStreamingContent("");
+					// setIsStreaming(false);
 				},
 				onerror(err) {
 					console.error("Error from server", err);
-					setIsStreaming(false);
+					// setIsStreaming(false);
 				},
 			});
 
@@ -81,9 +78,16 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 				fullResponse
 			);
 
-			setLoading(false);
+			setStreamingContent("");
+			setIsStreaming(false);
+			onSendMessage({
+				role: "assistant",
+				content: fullResponse,
+				references: context.references,
+				score: relevance.response_score,
+			});
 
-			alert(relevance.response_score);
+			setLoading(false);
 		} catch (error) {
 			console.error("Failed to fetch from server", error);
 			setIsStreaming(false);
@@ -108,7 +112,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 			chatWindowRef.current.scrollTop =
 				chatWindowRef.current.scrollHeight;
 		}
-	}, [currentChat, streamingContent]);
+	}, [currentChat, streamingContent, loading]);
 
 	if (!currentChat) {
 		return (

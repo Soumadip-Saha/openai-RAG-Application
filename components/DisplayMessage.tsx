@@ -25,6 +25,7 @@ const DisplayMessage: React.FC<IDisplayMessageProps> = ({
 			>
 				{message.content}
 			</Markdown>
+
 			{message.role === "assistant" && message.references && (
 				<div className="flex flex-wrap mt-2 gap-2">
 					{Object.entries(message.references).map(
@@ -32,11 +33,16 @@ const DisplayMessage: React.FC<IDisplayMessageProps> = ({
 							<button
 								key={i}
 								onClick={() => openModal(value)}
-								className="px-2 py-1 bg-amber-500 opacity-35 text-white text-[0.6rem] rounded-full hover:bg-amber-600 hover:opacity-100 transition duration-200"
+								className="px-2 py-1 bg-gray-500 opacity-35 text-white text-[0.6rem] rounded-full hover:bg-gray-600 hover:opacity-100 transition duration-200"
 							>
 								{key}
 							</button>
 						)
+					)}
+					{message.score && (
+						<p className="grid place-items-center font-medium rounded-full px-2 py-1 text-xs bg-green-600 text-slate-200">
+							{(message.score * 100).toFixed(2)}%
+						</p>
 					)}
 				</div>
 			)}
