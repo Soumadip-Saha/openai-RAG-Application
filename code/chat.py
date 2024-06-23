@@ -16,10 +16,9 @@ DEFAULT_CHAT_TEMPLATE = PromptTemplate(
 )
 
 DEFAULT_SYSTEM_TEMPLATE = PromptTemplate(
-    "Use the following pieces of context to answer the user's "
-    "question. In case if you don't know the answer or the question is "
-    "outside the context, don't try to make up an answer.\n----------------"
-    "{context}",
+    "You are an AI assistant. You are given a context and your knowledge is only limited to that context. Whenever you are asked a question, you should answer that question based on the context. If you are not able to generate the answer based on the context, you must always response this exact phrase: 'Sorry could not generate an answer. Please rephrase the question and ask again.'"
+    "\n----------------\n"
+    "Context: {context}",
     input_variables=["context"]
 )
 
