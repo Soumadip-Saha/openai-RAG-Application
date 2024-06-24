@@ -18,17 +18,17 @@ services:
     #   context: .
     #   dockerfile: Dockerfile
     ports:
-      - "5400:5400"
+      - 5400:5400
     image: sahasoumadip/openai-rag:1.2
     container_name: RAG_Backend
     environment:
-      - OPENAI_API_KEY="OPENAI-KEY"
-      - llm_model_name="gpt-4-0125-preview"
-      - embedding_model_name="text-embedding-3-small"
-      - VectorDB_HOST="http://elastic-search-url"
-      - VectorDB_INDEX="YOUR_INDEX"
-      - VectorDB_USER_NAME="ELASTIC_USERNAME"
-      - VectorDB_password="ELASTIC_PASSWORD"
+      - OPENAI_API_KEY=OPENAI-KEY
+      - llm_model_name=gpt-4-0125-preview
+      - embedding_model_name=text-embedding-3-small
+      - VectorDB_HOST=http://elastic-search-url
+      - VectorDB_INDEX=YOUR_INDEX
+      - VectorDB_USER_NAME=ELASTIC_USERNAME
+      - VectorDB_password=ELASTIC_PASSWORD
     command: "--workers 4"
 ```
 
