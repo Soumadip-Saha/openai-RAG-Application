@@ -13,8 +13,9 @@ RUN npm ci
 # Copy application files.
 COPY . .
 
-# 
-COPY .env /app/.env
+# Set environment variables.
+ARG SERVER_URL
+ENV SERVER_URL=${SERVER_URL}
 
 # Build the application.
 RUN npm run build
