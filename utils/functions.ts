@@ -10,7 +10,7 @@ export const buildContext = async (query: string, currentChat: Chat) => {
 
 	try {
 		const response = await fetch(
-			process.env.SERVER_URL + "/build_context",
+			process.env.NEXT_PUBLIC_SERVER_URL + "/build_context",
 			{
 				method: "POST",
 				headers: {
@@ -38,7 +38,7 @@ export const getRelevanceScore = async (
 ) => {
 	try {
 		const response = await fetch(
-			process.env.SERVER_URL + "/evaluate_response",
+			process.env.NEXT_PUBLIC_SERVER_URL + "/evaluate_response",
 			{
 				method: "POST",
 				headers: {
