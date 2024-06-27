@@ -8,14 +8,14 @@ services:
         image: sahasoumadip/openai-rag:1.3
         container_name: RAG_Backend
         environment:
-            - OPENAI_API_KEY=
-            - llm_model_name=
-            - embedding_model_name=
-            - VectorDB_HOST=
-            - VectorDB_INDEX=
-            - VectorDB_USER_NAME=
-            - VectorDB_password=
-        command: "--workers 4"
+            - OPENAI_API_KEY
+            - llm_model_name
+            - embedding_model_name
+            - VectorDB_HOST
+            - VectorDB_INDEX
+            - VectorDB_USER_NAME
+            - VectorDB_password
+        command: "--workers 2"
         networks:
             - openai-rag
 
