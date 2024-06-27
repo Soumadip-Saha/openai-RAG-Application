@@ -23,11 +23,11 @@ services:
         # build:
         #     context: ./Frontend
         #     dockerfile: Dockerfile
-        #     args:
-        #         - SERVER_URL=http://localhost:5400
         ports:
             - 3000:3000
-        image: shadow783/rag-frontend:1.0
+        environment:
+            - BACKEND_URL=http://localhost:5400
+        image: shadow783/rag-frontend:1.1
         container_name: rag-frontend
         networks:
             - openai-rag
