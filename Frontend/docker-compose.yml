@@ -1,9 +1,9 @@
 services:
-  web:
-    build: .
-    ports:
-      - 3000:3000
-    image: "rag-frontend"
-    container_name: "rag-frontend"
-    environment:
-      - BACKEND_URL=http://take.com
+    web:
+        build: .
+        ports:
+            - 3000:3000
+        image: shadow783/rag-frontend:1.1
+        container_name: openai-RAG-frontend
+        environment:
+            - BACKEND_URL=http://localhost:8000

@@ -28,7 +28,7 @@ services:
         environment:
             - BACKEND_URL=http://localhost:5400
         image: shadow783/rag-frontend:1.1
-        container_name: rag-frontend
+        container_name: RAG-Frontend
         networks:
             - openai-rag
 

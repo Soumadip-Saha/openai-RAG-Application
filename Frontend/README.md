@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# openai-RAG-frontend
 
-## Getting Started
+## Overview
 
-First, run the development server:
+This repository provides a frontend interface for interacting with the RAG backend. Built with Next.js, this application allows users to start multiple chats, each with its own context, and leverage the capabilities of the RAG backend for document-based question answering.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Multiple Chats**: Users can start and manage multiple chats, each with its own context and history.
+- **Real-time Communication**: Communicates with the RAG backend in real-time to provide prompt responses.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How to Use
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+To set up the frontend, ensure that you have Docker and Docker Compose installed. The frontend is configured to communicate with the backend through environment variables set in the `docker-compose.yml` file.
 
-## Learn More
+1. **Clone the Repository**:
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   git clone https://github.com/Soumadip-Saha/openai-RAG-Application
+   cd Frontend
+   ```
+2. **Set Up Environment Variables**:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   Modify the `docker-compose.yml` file to set the environment variables needed for your setup:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+   ```yaml
+   services:
+     web:
+       # build: .
+       ports:
+         - 3000:3000
+       image: "shadow783/rag-frontend:1.1"
+       container_name: "openai-RAG-frontend"
+       environment:
+         - BACKEND_URL=http://localhost:8000
+   ```
 
-## Deploy on Vercel
+The image is already available at [DockerHub](https://hub.docker.com/repository/docker/shadow783/rag-frontend)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+3. **Start the Application in background**:
+
+   ```bash
+   docker-compose up -d
+   ```
+4. **Test the Application**:
+   View the frontend in your browser: http://localhost:3000
+
+## Chat Interface
+
+The frontend interface provides a simple and intuitive way to start new chats and interact with the backend. Each chat retains its own context, allowing for complex, multi-turn conversations.
+
+### Starting a New Chat
+
+1. Click on the "New Chat" button.
+2. Enter your query in the chat input box.
+3. View responses from the backend in real-time.
+
+### Managing Chats
+
+- **Switching Between Chats**: Click on the chat tabs in the side bar to switch between different conversations.
+- **Deleting Chats**: Click on the "Delete" icon next to a chat tab to remove a conversation.
+- **Naming Chats**: Click on the "Edit" icon next to a chat tab to rename a conversation.
+
+## Future Features
+
+The upcoming versions of the rag-frontend will include:
+
+- **Authentication**: Secure user authentication to manage access and user-specific data.
+- **Database Integration**: Persistent storage of chat history and user data for a seamless experience across sessions.
+- **Enhanced UI/UX**: Improvements to the user interface and experience based on user feedback.
+
+*Note: The current version of the frontend does not include data persistence.*
+
+## Contributing
+
+We welcome contributions to enhance the functionality and usability of the rag-frontend. To contribute:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Commit your changes (`git commit -am 'Add new feature'`).
+4. Push to the branch (`git push origin feature-branch`).
+5. Create a new Pull Request.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+---
+
+By providing a user-friendly interface for the RAG backend, the openai-RAG-frontend aims to facilitate efficient document-based question answering, with a focus on scalability and future enhancements for a better user experience.
