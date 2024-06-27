@@ -13,9 +13,8 @@ RUN npm ci
 # Copy application files.
 COPY . .
 
-# Set environment variables.
-ARG SERVER_URL
-ENV SERVER_URL=${SERVER_URL}
+# Give permissions to execute.
+RUN chmod +x /app/init.sh
 
 # Build the application.
 RUN npm run build
@@ -24,4 +23,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Run the application.
-ENTRYPOINT npm start
+ENTRYPOINT ["/bin/sh", "-c", "/app/init.sh /app/.next && npm start"]

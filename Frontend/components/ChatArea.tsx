@@ -42,34 +42,37 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 
 			let fullResponse = "";
 
-			await fetchEventSource(process.env.SERVER_URL + "/stream", {
-				method: "POST",
-				headers: {
-					Accept: "text/event-stream",
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					query: context.stand_alone_query,
-					context: context.context,
-					userId: "test",
-				}),
-				onmessage(event) {
-					setLoading(false);
-					const chunk = event.data === "" ? " \n" : event.data;
-					fullResponse += chunk;
-					setStreamingContent(fullResponse);
-				},
-				onclose() {
-					console.log("Stream closed");
+			await fetchEventSource(
+				process.env.NEXT_PUBLIC_SERVER_URL + "/stream",
+				{
+					method: "POST",
+					headers: {
+						Accept: "text/event-stream",
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						query: context.stand_alone_query,
+						context: context.context,
+						userId: "test",
+					}),
+					onmessage(event) {
+						setLoading(false);
+						const chunk = event.data === "" ? " \n" : event.data;
+						fullResponse += chunk;
+						setStreamingContent(fullResponse);
+					},
+					onclose() {
+						console.log("Stream closed");
 
-					// setStreamingContent("");
-					// setIsStreaming(false);
-				},
-				onerror(err) {
-					console.error("Error from server", err);
-					// setIsStreaming(false);
-				},
-			});
+						// setStreamingContent("");
+						// setIsStreaming(false);
+					},
+					onerror(err) {
+						console.error("Error from server", err);
+						// setIsStreaming(false);
+					},
+				}
+			);
 
 			setLoading(true);
 			setLoadingText("Evaluating Response...");
