@@ -97,6 +97,7 @@ async def get_chatbot(app: FastAPI):
         }
     )
     yield
+    await chatbot.vector_db.client.close()
     chatbot = None
 
 
@@ -217,7 +218,7 @@ async def chat_endpoint(
                 stand_alone_query=output["stand_alone_query"],
                 docs=output["docs"],
                 confidence_score=output["confidence_score"],
-                response_score=response_score,
+                response_score=response_score[0],
                 token_usage=output["token_usage"]
             )
         else:
