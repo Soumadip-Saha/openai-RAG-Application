@@ -29,7 +29,7 @@ class ChatBot():
         openai_api_key: str,
         embedding_model: str,
         llm_model: str,
-        vector_database_config: Dict[str, str],
+        vector_database_config: Dict[str, Any],
         chat_history_template: PromptTemplate = DEFAULT_CHAT_TEMPLATE,
         system_template: PromptTemplate = DEFAULT_SYSTEM_TEMPLATE
     ):

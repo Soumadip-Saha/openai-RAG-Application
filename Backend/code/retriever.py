@@ -1,9 +1,10 @@
 from elasticsearch import AsyncElasticsearch
 from code.embedding import EmbeddingModel
+from typing import List
 
 
 class VectorDB():
-    def __init__(self, host: str, index: str, user_name: str, password: str):
+    def __init__(self, host: str, index: str | List[str], user_name: str, password: str):
         self.client = AsyncElasticsearch(
             host, basic_auth=(user_name, password), verify_certs=False
         )

@@ -17,7 +17,7 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    answer: str
+    response: str
     query: str
     references: List[str]
     userId: str
@@ -69,12 +69,12 @@ class EvaluateResponseOutput(BaseModel):
 def load_config() -> Dict:
     return {
         "OPENAI_API_KEY": os.getenv('OPENAI_API_KEY'),
-        "embedding_model_name": os.getenv('embedding_model_name'),
-        "llm_model_name": os.getenv('llm_model_name'),
-        "VectorDB_HOST": os.getenv('VectorDB_HOST'),
-        "VectorDB_INDEX": os.getenv('VectorDB_INDEX'),
-        "VectorDB_USER_NAME": os.getenv('VectorDB_USER_NAME'),
-        "VectorDB_password": os.getenv('VectorDB_password')
+        "embedding_model_name": os.getenv('EMBEDDING_MODEL_NAME'),
+        "llm_model_name": os.getenv('LLM_MODEL_NAME'),
+        "VectorDB_HOST": os.getenv('VECTORDB_HOST'),
+        "VectorDB_INDEX": os.getenv('VECTORDB_INDEX').split(','),
+        "VectorDB_USER_NAME": os.getenv('VECTORDB_USER_NAME'),
+        "VectorDB_password": os.getenv('VECTORDB_PASSWORD')
     }
 
 
@@ -225,7 +225,7 @@ async def chat_endpoint(
             output = await chatbot(query=request.query, chats=request.chats)
             response = process_output(output=output)
             return ChatResponse(
-                answer=response["answer"],
+                response=response["answer"],
                 query=request.query,
                 references=response["references"],
                 userId=request.userId
