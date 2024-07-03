@@ -3,6 +3,7 @@ from code.llm import LLMClient
 from code.retriever import VectorDB
 from code.prompt import PromptTemplate
 from typing import List, Dict, Any
+from code.tools import ElasticTool
 
 DEFAULT_CHAT_TEMPLATE = PromptTemplate(
     "Given a chat history and the latest user question "
@@ -38,6 +39,9 @@ class ChatBot():
         self.vector_db = VectorDB(**vector_database_config)
         self.chat_template = chat_history_template
         self.system_template = system_template
+        self.tool_list = {
+            "ElasticTool": ElasticTool(self.llm)
+        }
 
     @staticmethod
     def format_chat_history(messages: List[Dict[str, str]]):
@@ -116,9 +120,21 @@ class ChatBot():
             new_query = await self.get_standalone_query(query, chats)
         else:
             new_query = query
-        docs = await self.vector_db.get_docs(
-            new_query, self.embedding_model, top_docs=kwds.get("top_docs", 5)
-        )
+
+        tools = kwds.get("tools", None)
+        if tools:
+            # TODO: Add support for multiple tools
+            tool_to_use = self.tool_list.get(tools)
+            search_query = await tool_to_use(new_query)
+            docs = await self.vector_db.get_docs(
+                new_query, self.embedding_model, top_docs=kwds.get("top_docs", 5), search_query=search_query
+            )
+        else:
+            docs = await self.vector_db.get_docs(
+                new_query, self.embedding_model, top_docs=kwds.get(
+                    "top_docs", 5)
+            )
+
         return {
             "query": query,
             "stand_alone_query": new_query,

@@ -1,6 +1,6 @@
 from elasticsearch import AsyncElasticsearch
 from code.embedding import EmbeddingModel
-from typing import List
+from typing import List, Dict, Any
 
 
 class VectorDB():
@@ -22,7 +22,7 @@ class VectorDB():
         query_vector = await embedding_model.get_embeddings(query)
         script_query = {
             "script_score": {
-                "query": {"match_all": {}},
+                "query": kwargs.pop("search_query", {"match_all": {}}),
                 "script": {
                     "source": "cosineSimilarity(params.query_vector, 'vector') + 1",
                     "params": {"query_vector": query_vector}

@@ -43,6 +43,8 @@ class BuildContextInput(BaseModel):
     query: str
     chats: List[Dict[str, str]]
     userId: str
+    # TODO: Add support for multiple tools
+    tools: List[str] = None
 
 
 class BuildContextOutput(BaseModel):
@@ -153,28 +155,28 @@ def process_output(output: Dict[str, Any]) -> Dict[str, Any]:
 
 @app.post("/build_context", response_model=BuildContextOutput)
 async def build_context(request: BuildContextInput):
-    try:
-        response = await chatbot.build_context(
-            query=request.query, chats=request.chats
+    # try:
+    response = await chatbot.build_context(
+        query=request.query, chats=request.chats, tools=request.tools[0]
+    )
+    response["context"] = chatbot.create_context(response["docs"])
+    references = {}
+    for doc in response["docs"]:
+        doc_name = os.path.basename(
+            doc['source'].replace('\\', os.sep)
         )
-        response["context"] = chatbot.create_context(response["docs"])
-        references = {}
-        for doc in response["docs"]:
-            doc_name = os.path.basename(
-                doc['source'].replace('\\', os.sep)
-            )
-            references[doc_name] = references.get(
-                doc_name, "") + f"{doc['content']}\n\n"
-        return BuildContextOutput(
-            query=response["query"],
-            stand_alone_query=response["stand_alone_query"],
-            docs=response["docs"],
-            context=response["context"],
-            references=references,
-            userId=request.userId
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        references[doc_name] = references.get(
+            doc_name, "") + f"{doc['content']}\n\n"
+    return BuildContextOutput(
+        query=response["query"],
+        stand_alone_query=response["stand_alone_query"],
+        docs=response["docs"],
+        context=response["context"],
+        references=references,
+        userId=request.userId
+    )
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/stream", response_model=str)
