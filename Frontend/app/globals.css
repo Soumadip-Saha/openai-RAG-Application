@@ -117,3 +117,20 @@ h6 {
 		border-radius: 8px;
 	}
 }
+
+.tools-popup {
+	animation: fadeInAndGrow 500ms ease-in-out;
+	transition: all 0.3s ease-in-out;
+	overflow: hidden;
+}
+
+@keyframes fadeInAndGrow {
+	0% {
+		opacity: 0;
+		height: 0;
+	}
+	100% {
+		opacity: 1;
+		height: auto;
+	}
+}

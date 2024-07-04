@@ -6,8 +6,8 @@ This repository provides a frontend interface for interacting with the RAG backe
 
 ## Features
 
-- **Multiple Chats**: Users can start and manage multiple chats, each with its own context and history.
-- **Real-time Communication**: Communicates with the RAG backend in real-time to provide prompt responses.
+-   **Multiple Chats**: Users can start and manage multiple chats, each with its own context and history.
+-   **Real-time Communication**: Communicates with the RAG backend in real-time to provide prompt responses.
 
 ## How to Use
 
@@ -15,34 +15,35 @@ To set up the frontend, ensure that you have Docker and Docker Compose installed
 
 1. **Clone the Repository**:
 
-   ```bash
-   git clone https://github.com/Soumadip-Saha/openai-RAG-Application
-   cd Frontend
-   ```
+    ```bash
+    git clone https://github.com/Soumadip-Saha/openai-RAG-Application
+    cd Frontend
+    ```
+
 2. **Set Up Environment Variables**:
 
-   Modify the `docker-compose.yml` file to set the environment variables needed for your setup:
+    Modify the `docker-compose.yml` file to set the environment variables needed for your setup:
 
-   ```yaml
-   services:
-     web:
-       # build: .
-       ports:
-         - 3000:3000
-       image: "shadow783/rag-frontend:1.1"
-       container_name: "openai-RAG-frontend"
-       environment:
-         - BACKEND_URL=http://localhost:8000
-   ```
+    ```yaml
+    services:
+        web:
+            # build: .
+            ports:
+                - 3000:3000
+            image: "shadow783/rag-frontend:1.1"
+            container_name: "openai-RAG-frontend"
+            environment:
+                - BACKEND_URL=http://localhost:8000
+    ```
 
 The image is already available at [DockerHub](https://hub.docker.com/repository/docker/shadow783/rag-frontend)
 
-
 3. **Start the Application in background**:
 
-   ```bash
-   docker-compose up -d
-   ```
+    ```bash
+    docker-compose up -d
+    ```
+
 4. **Test the Application**:
    View the frontend in your browser: http://localhost:3000
 
@@ -58,19 +59,19 @@ The frontend interface provides a simple and intuitive way to start new chats an
 
 ### Managing Chats
 
-- **Switching Between Chats**: Click on the chat tabs in the side bar to switch between different conversations.
-- **Deleting Chats**: Click on the "Delete" icon next to a chat tab to remove a conversation.
-- **Naming Chats**: Click on the "Edit" icon next to a chat tab to rename a conversation.
+-   **Switching Between Chats**: Click on the chat tabs in the side bar to switch between different conversations.
+-   **Deleting Chats**: Click on the "Delete" icon next to a chat tab to remove a conversation.
+-   **Naming Chats**: Click on the "Edit" icon next to a chat tab to rename a conversation.
 
 ## Future Features
 
 The upcoming versions of the rag-frontend will include:
 
-- **Authentication**: Secure user authentication to manage access and user-specific data.
-- **Database Integration**: Persistent storage of chat history and user data for a seamless experience across sessions.
-- **Enhanced UI/UX**: Improvements to the user interface and experience based on user feedback.
+-   **Authentication**: Secure user authentication to manage access and user-specific data.
+-   **Database Integration**: Persistent storage of chat history and user data for a seamless experience across sessions.
+-   **Enhanced UI/UX**: Improvements to the user interface and experience based on user feedback.
 
-*Note: The current version of the frontend does not include data persistence.*
+_Note: The current version of the frontend does not include data persistence._
 
 ## Contributing
 
