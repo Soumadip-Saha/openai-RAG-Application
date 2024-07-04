@@ -20,14 +20,14 @@ services:
             - openai-rag
 
     frontend:
-        # build:
-        #     context: ./Frontend
-        #     dockerfile: Dockerfile
+        build:
+            context: ./Frontend
+            dockerfile: Dockerfile
         ports:
             - 3000:3000
         environment:
             - BACKEND_URL=http://localhost:5400
-        image: shadow783/rag-frontend:1.1
+        image: shadow783/rag-frontend:1.2
         container_name: RAG-Frontend
         networks:
             - openai-rag
