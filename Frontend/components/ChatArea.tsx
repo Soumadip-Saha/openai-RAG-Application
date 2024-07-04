@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, {
+	useState,
+	useRef,
+	useEffect,
+	useCallback,
+	useMemo,
+} from "react";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 import { Chat, Message } from "@/types/chat-types";
 import Markdown from "markdown-to-jsx";
@@ -19,144 +25,182 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 	const [modalContent, setModalContent] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [loadingText, setLoadingText] = useState("Loading...");
-
-<<<<<<< HEAD
-	const messageRef = useRef<HTMLInputElement>(null);
-=======
+	const [inputValue, setInputValue] = useState("");
 	const [showTools, setShowTools] = useState(false);
-	const [tools, setTools] = useState(["Document", "Query", "Code"]);
+	const [selectedTool, setSelectedTool] = useState("");
 
-	const messageRef = useRef<HTMLTextAreaElement>(null);
->>>>>>> master
+	const messageRef = useRef<HTMLInputElement>(null);
 	const chatWindowRef = useRef<HTMLDivElement>(null);
+	const debounceTimeoutRef = useRef<number | undefined>(undefined);
 
-	const openModal = (content: string) => {
+	const tools = useMemo(() => ["Elastic"], []);
+
+	const openModal = useCallback((content: string) => {
 		setModalContent(content);
-	};
+	}, []);
 
-	const closeModal = () => {
+	const closeModal = useCallback(() => {
 		setModalContent(null);
-	};
+	}, []);
 
-	const streamQueryResponse = async (userMessage: string) => {
-		try {
-			onSendMessage({ role: "user", content: userMessage });
+	const stripToolText = useCallback(
+		(message: string) => {
+			if (selectedTool) {
+				const toolPattern = new RegExp(`@${selectedTool}\\s*`, "g");
+				return message.replace(toolPattern, "").trim();
+			}
+			return message;
+		},
+		[selectedTool]
+	);
 
-			setLoading(true);
-			setLoadingText("Building Context...");
-			const context = await buildContext(userMessage, currentChat!);
+	const streamQueryResponse = useCallback(
+		async (userMessage: string) => {
+			try {
+				const strippedMessage = stripToolText(userMessage);
+				onSendMessage({ role: "user", content: strippedMessage });
 
-			setIsStreaming(true);
+				setLoading(true);
+				setLoadingText("Building Context...");
+				const context = await buildContext(
+					strippedMessage,
+					currentChat!,
+					selectedTool ? [selectedTool + "Tool"] : []
+				);
 
-			let fullResponse = "";
+				setIsStreaming(true);
 
-			await fetchEventSource(
-				process.env.NEXT_PUBLIC_SERVER_URL + "/stream",
-				{
-					method: "POST",
-					headers: {
-						Accept: "text/event-stream",
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						query: context.stand_alone_query,
-						context: context.context,
-						userId: "test",
-					}),
-					onmessage(event) {
-						setLoading(false);
-						const chunk = event.data === "" ? " \n" : event.data;
-						fullResponse += chunk;
-						setStreamingContent(fullResponse);
-					},
-					onclose() {
-						console.log("Stream closed");
+				let fullResponse = "";
 
-						// setStreamingContent("");
-						// setIsStreaming(false);
-					},
-					onerror(err) {
-						console.error("Error from server", err);
-						// setIsStreaming(false);
-					},
-				}
-			);
+				await fetchEventSource(
+					process.env.NEXT_PUBLIC_SERVER_URL + "/stream",
+					{
+						method: "POST",
+						headers: {
+							Accept: "text/event-stream",
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							query: context.stand_alone_query,
+							context: context.context,
+							userId: "test",
+						}),
+						onmessage(event) {
+							setLoading(false);
+							const chunk =
+								event.data === "" ? " \n" : event.data;
+							fullResponse += chunk;
+							setStreamingContent(fullResponse);
+						},
+						onclose() {
+							console.log("Stream closed");
+						},
+						onerror(err) {
+							console.error("Error from server", err);
+						},
+					}
+				);
 
-			setLoading(true);
-			setLoadingText("Evaluating Response...");
-			const relevance = await getRelevanceScore(
-				context.stand_alone_query,
-				fullResponse
-			);
+				setLoading(true);
+				setLoadingText("Evaluating Response...");
+				const relevance = await getRelevanceScore(
+					context.stand_alone_query,
+					fullResponse
+				);
 
-			setStreamingContent("");
-			setIsStreaming(false);
-			onSendMessage({
-				role: "assistant",
-				content: fullResponse,
-				references: context.references,
-				score: relevance.response_score,
-			});
+				setStreamingContent("");
+				setIsStreaming(false);
+				onSendMessage({
+					role: "assistant",
+					content: fullResponse,
+					references: context.references,
+					score: relevance.response_score,
+				});
 
-			setLoading(false);
-		} catch (error) {
-			console.error("Failed to fetch from server", error);
-			setIsStreaming(false);
-			setLoading(false);
-			alert("Failed to fetch from server");
-		}
-	};
+				setLoading(false);
+			} catch (error) {
+				console.error("Failed to fetch from server", error);
+				setIsStreaming(false);
+				setLoading(false);
+				alert("Failed to fetch from server");
+			}
+		},
+		[currentChat, onSendMessage, selectedTool, stripToolText]
+	);
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (
-			messageRef.current &&
-			messageRef.current.value.trim() &&
-			!isStreaming
-		) {
-			const userMessage = messageRef.current.value;
-			messageRef.current.value = "";
-			streamQueryResponse(userMessage);
-		}
-	};
+	const handleSubmit = useCallback(
+		(e: React.FormEvent) => {
+			e.preventDefault();
+			if (inputValue.trim() && !isStreaming) {
+				streamQueryResponse(inputValue);
+				setInputValue("");
+				setSelectedTool("");
+			}
+		},
+		[inputValue, isStreaming, streamQueryResponse]
+	);
 
-<<<<<<< HEAD
-=======
-	const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-		const value = e.target.value;
+	const handleInputChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = e.target.value;
+			setInputValue(value);
 
-		if (value.startsWith("@") && value.length === 1) {
-			setShowTools(true);
-		} else {
-			setShowTools(false);
-		}
+			if (value.startsWith("@") && !value.trim().includes(" ")) {
+				setShowTools(true);
+			} else {
+				setShowTools(false);
+			}
+		},
+		[]
+	);
 
-		e.target.style.height = "auto";
-		e.target.style.height = `${Math.min(e.target.scrollHeight, 7 * 24)}px`;
-	};
+	const debouncedHandleInputChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			clearTimeout(debounceTimeoutRef.current);
+			const value = e.target.value;
 
-	const handleToolSelect = (suggestion: string) => {
-		if (messageRef.current) {
-			messageRef.current.value = `@${suggestion} `;
-			messageRef.current.focus();
-			setShowTools(false);
+			debounceTimeoutRef.current = window.setTimeout(() => {
+				handleInputChange(e);
+			}, 500);
 
-			// Adjust textarea height after selection
-			messageRef.current.style.height = "auto";
-			messageRef.current.style.height = `${Math.min(
-				messageRef.current.scrollHeight,
-				7 * 24
-			)}px`;
-		}
-	};
+			setInputValue(value);
+		},
+		[handleInputChange]
+	);
 
->>>>>>> master
+	const handleToolSelect = useCallback((tool: string) => {
+		const toolName = `@${tool} `;
+		setSelectedTool(tool);
+		setShowTools(false);
+		setInputValue(
+			(prevValue) => toolName + prevValue.replace(/^@\w*\s*/, "")
+		);
+		messageRef.current?.focus();
+	}, []);
+
 	useEffect(() => {
 		if (chatWindowRef.current) {
 			chatWindowRef.current.scrollTop =
 				chatWindowRef.current.scrollHeight;
 		}
 	}, [currentChat, streamingContent, loading]);
+
+	const renderInputWithHighlight = useMemo(() => {
+		if (selectedTool) {
+			const toolPattern = new RegExp(`^(@${selectedTool}\\s)`);
+			const match = inputValue.match(toolPattern);
+			if (match) {
+				return (
+					<>
+						<span className="text-green-600">{match[0]}</span>
+					</>
+				);
+			} else {
+				setSelectedTool("");
+			}
+		}
+		return "";
+	}, [inputValue, selectedTool]);
 
 	if (!currentChat) {
 		return (
@@ -195,37 +239,41 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					</p>
 				)}
 			</div>
-<<<<<<< HEAD
-			<form onSubmit={handleSubmit} className="p-4 bg-zinc-900">
-				<div className="flex space-x-2">
-					<input
-						type="text"
-=======
+			{modalContent && (
+				<Modal content={modalContent} onClose={closeModal} />
+			)}
 			<form
 				onSubmit={handleSubmit}
 				className="p-4 bg-zinc-900 absolute bottom-0 w-[calc(100vw-256px)]"
 			>
-				<div className="flex space-x-2 items-center">
-					<textarea
-						contentEditable={!isStreaming}
->>>>>>> master
-						ref={messageRef}
-						className="flex-1 px-4 py-2 bg-zinc-800 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-700 text-white disabled:opacity-50"
-						placeholder="Type a message..."
-						disabled={isStreaming}
-<<<<<<< HEAD
-						required
-					/>
-=======
-						onChange={handleTextChange}
-						style={{ minHeight: "24px", maxHeight: "168px" }}
-						rows={1}
-						required
-					/>
-					{showTools && (
-						<Tools tools={tools} onSelect={handleToolSelect} />
-					)}
->>>>>>> master
+				<div className="flex space-x-2 items-center relative">
+					<div className="flex-1 px-4 py-2 bg-zinc-800 border border-zinc-800 rounded-lg focus-within:ring-2 focus-within:ring-zinc-700 text-white">
+						<div className="relative">
+							<div className="absolute inset-0 pointer-events-none">
+								{renderInputWithHighlight}
+							</div>
+							<input
+								ref={messageRef}
+								type="text"
+								className="w-full bg-transparent focus:outline-none"
+								value={inputValue}
+								onChange={debouncedHandleInputChange}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" && !e.shiftKey) {
+										e.preventDefault();
+										handleSubmit(e);
+									}
+								}}
+								disabled={isStreaming}
+							/>
+							{showTools && (
+								<Tools
+									tools={tools}
+									onSelect={handleToolSelect}
+								/>
+							)}
+						</div>
+					</div>
 					<button
 						type="submit"
 						className="px-4 py-2 bg-green-900 text-sm text-white rounded-lg hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-800 transition duration-200 disabled:pointer-events-none disabled:opacity-50"
@@ -235,9 +283,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					</button>
 				</div>
 			</form>
-			{modalContent && (
-				<Modal content={modalContent} onClose={closeModal} />
-			)}
 		</div>
 	);
 };
