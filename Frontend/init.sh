@@ -29,7 +29,7 @@ fi
 
 # Use find to locate all files in the specified directory and its subdirectories
 # Use sed to perform the replacement in place (-i) for each file found
-find "$DIRECTORY" -type f -exec sed -i "s|http://localhost:8003|$BACKEND_URL|g" {} +
+find "$DIRECTORY" -type f -exec sed -i "s|http://localhost:5400|$BACKEND_URL|g" {} +
 
 echo $BACKEND_URL
 
