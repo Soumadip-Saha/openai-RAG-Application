@@ -6,4 +6,4 @@ services:
     image: "rag-frontend"
     container_name: "rag-frontend"
     environment:
-      - BACKEND_URL=http://take.com
+      - BACKEND_URL=http://localhost:8003

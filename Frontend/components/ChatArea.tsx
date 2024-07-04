@@ -6,6 +6,7 @@ import { buildContext, getRelevanceScore } from "@/utils/functions";
 import Modal from "./Modal";
 import DisplayMessage from "./DisplayMessage";
 import Spinner from "./Spinner";
+import Tools from "./Tools";
 
 interface ChatAreaProps {
 	currentChat: Chat | null;
@@ -19,7 +20,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 	const [loading, setLoading] = useState(false);
 	const [loadingText, setLoadingText] = useState("Loading...");
 
-	const messageRef = useRef<HTMLInputElement>(null);
+	const [showTools, setShowTools] = useState(false);
+	const [tools, setTools] = useState(["Document", "Query", "Code"]);
+
+	const messageRef = useRef<HTMLTextAreaElement>(null);
 	const chatWindowRef = useRef<HTMLDivElement>(null);
 
 	const openModal = (content: string) => {
@@ -112,6 +116,34 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 		}
 	};
 
+	const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const value = e.target.value;
+
+		if (value.startsWith("@") && value.length === 1) {
+			setShowTools(true);
+		} else {
+			setShowTools(false);
+		}
+
+		e.target.style.height = "auto";
+		e.target.style.height = `${Math.min(e.target.scrollHeight, 7 * 24)}px`;
+	};
+
+	const handleToolSelect = (suggestion: string) => {
+		if (messageRef.current) {
+			messageRef.current.value = `@${suggestion} `;
+			messageRef.current.focus();
+			setShowTools(false);
+
+			// Adjust textarea height after selection
+			messageRef.current.style.height = "auto";
+			messageRef.current.style.height = `${Math.min(
+				messageRef.current.scrollHeight,
+				7 * 24
+			)}px`;
+		}
+	};
+
 	useEffect(() => {
 		if (chatWindowRef.current) {
 			chatWindowRef.current.scrollTop =
@@ -156,16 +188,25 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					</p>
 				)}
 			</div>
-			<form onSubmit={handleSubmit} className="p-4 bg-zinc-900">
-				<div className="flex space-x-2">
-					<input
-						type="text"
+			<form
+				onSubmit={handleSubmit}
+				className="p-4 bg-zinc-900 absolute bottom-0 w-[calc(100vw-256px)]"
+			>
+				<div className="flex space-x-2 items-center">
+					<textarea
+						contentEditable={!isStreaming}
 						ref={messageRef}
 						className="flex-1 px-4 py-2 bg-zinc-800 border border-zinc-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-700 text-white disabled:opacity-50"
 						placeholder="Type a message..."
 						disabled={isStreaming}
+						onChange={handleTextChange}
+						style={{ minHeight: "24px", maxHeight: "168px" }}
+						rows={1}
 						required
 					/>
+					{showTools && (
+						<Tools tools={tools} onSelect={handleToolSelect} />
+					)}
 					<button
 						type="submit"
 						className="px-4 py-2 bg-green-900 text-sm text-white rounded-lg hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-800 transition duration-200 disabled:pointer-events-none disabled:opacity-50"
