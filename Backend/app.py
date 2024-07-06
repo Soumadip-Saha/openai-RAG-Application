@@ -155,20 +155,9 @@ def process_output(output: Dict[str, Any]) -> Dict[str, Any]:
 
 @app.post("/build_context", response_model=BuildContextOutput)
 async def build_context(request: BuildContextInput):
-    # try:
-    if request.tools and len(request.tools) > 0:
+    try:
         response = await chatbot.build_context(
-            query=request.query, chats=request.chats, tools=request.tools[0]
-        )
-    else:
-        response = await chatbot.build_context(
-            query=request.query, chats=request.chats
-        )
-    response["context"] = chatbot.create_context(response["docs"])
-    references = {}
-    for doc in response["docs"]:
-        doc_name = os.path.basename(
-            doc['source'].replace('\\', os.sep)
+            query=request.query, chats=request.chats, tools=request.tools
         )
         response["context"] = chatbot.create_context(response["docs"])
         references = {}
