@@ -71,12 +71,12 @@ class EvaluateResponseOutput(BaseModel):
 def load_config() -> Dict:
     return {
         "OPENAI_API_KEY": os.getenv('OPENAI_API_KEY'),
-        "embedding_model_name": os.getenv('EMBEDDING_MODEL_NAME'),
-        "llm_model_name": os.getenv('LLM_MODEL_NAME'),
-        "VectorDB_HOST": os.getenv('VECTORDB_HOST'),
-        "VectorDB_INDEX": os.getenv('VECTORDB_INDEX').split(','),
-        "VectorDB_USER_NAME": os.getenv('VECTORDB_USER_NAME'),
-        "VectorDB_password": os.getenv('VECTORDB_PASSWORD')
+        "EMBEDDING_MODEL_NAME": os.getenv('EMBEDDING_MODEL_NAME'),
+        "LLM_MODEL_NAME": os.getenv('LLM_MODEL_NAME'),
+        "VECTORDB_HOST": os.getenv('VECTORDB_HOST'),
+        "VECTORDB_INDEX": os.getenv('VECTORDB_INDEX').split(','),
+        "VECTORDB_USER_NAME": os.getenv('VECTORDB_USER_NAME'),
+        "VECTORDB_PASSWORD": os.getenv('VECTORDB_PASSWORD')
     }
 
 
@@ -89,13 +89,13 @@ async def get_chatbot(app: FastAPI):
     config = load_config()
     chatbot = ChatBot(
         openai_api_key=config['OPENAI_API_KEY'],
-        embedding_model=config['embedding_model_name'],
-        llm_model=config['llm_model_name'],
+        embedding_model=config['EMBEDDING_MODEL_NAME'],
+        llm_model=config['LLM_MODEL_NAME'],
         vector_database_config={
-            'host': config['VectorDB_HOST'],
-            'index': config['VectorDB_INDEX'],
-            'user_name': config['VectorDB_USER_NAME'],
-            'password': config['VectorDB_password']
+            'host': config['VECTORDB_HOST'],
+            'index': config['VECTORDB_INDEX'],
+            'user_name': config['VECTORDB_USER_NAME'],
+            'password': config['VECTORDB_PASSWORD']
         }
     )
     yield
@@ -155,9 +155,20 @@ def process_output(output: Dict[str, Any]) -> Dict[str, Any]:
 
 @app.post("/build_context", response_model=BuildContextOutput)
 async def build_context(request: BuildContextInput):
-    try:
+    # try:
+    if request.tools and len(request.tools) > 0:
         response = await chatbot.build_context(
-            query=request.query, chats=request.chats, tools=request.tools
+            query=request.query, chats=request.chats, tools=request.tools[0]
+        )
+    else:
+        response = await chatbot.build_context(
+            query=request.query, chats=request.chats
+        )
+    response["context"] = chatbot.create_context(response["docs"])
+    references = {}
+    for doc in response["docs"]:
+        doc_name = os.path.basename(
+            doc['source'].replace('\\', os.sep)
         )
         response["context"] = chatbot.create_context(response["docs"])
         references = {}

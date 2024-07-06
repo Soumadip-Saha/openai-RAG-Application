@@ -5,7 +5,11 @@ import {
 } from "@/types/chat-types";
 import { convertChatToQA } from "@/utils/helpers";
 
-export const buildContext = async (query: string, currentChat: Chat) => {
+export const buildContext = async (
+	query: string,
+	currentChat: Chat,
+	tools: string[]
+) => {
 	let chats = convertChatToQA(currentChat);
 
 	try {
@@ -16,7 +20,7 @@ export const buildContext = async (query: string, currentChat: Chat) => {
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ query, chats, userId: "test" }),
+				body: JSON.stringify({ query, chats, userId: "test", tools }),
 			}
 		);
 
