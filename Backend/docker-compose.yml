@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 services:
   openai-rag:
     build:
@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - 5400:5400
-    image: sahasoumadip/openai-rag:1.3.1
+    image: sahasoumadip/openai-rag:1.3.2
     container_name: RAG_Backend
     environment:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -16,5 +16,5 @@ services:
       - VECTORDB_INDEX=${VECTORDB_INDEX}
       - VECTORDB_USER_NAME=${VECTORDB_USER_NAME}
       - VECTORDB_PASSWORD=${VECTORDB_PASSWORD}
-    command: --workers 2
+    command: --workers 1
     # restart: always

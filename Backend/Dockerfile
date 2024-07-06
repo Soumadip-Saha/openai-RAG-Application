@@ -13,4 +13,3 @@ COPY app.py /app/app.py
 
 # Entrypoint for the docker container
 ENTRYPOINT ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "5400"]
-

@@ -1,0 +1,20 @@
+# Ignore all __pycache__ directories
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# # Ignore specific directories if needed
+# BACKEND/__pycache__
+# BACKEND/code/__pycache__
+
+# Virtual environment
+.venv
+venv/
+
+# Other common ignores
+.git
+.gitignore
+.env
+*.log
+*.tmp

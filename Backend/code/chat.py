@@ -124,8 +124,9 @@ class ChatBot():
         tools = kwds.get("tools", None)
         if tools:
             # TODO: Add support for multiple tools
-            tool_to_use = self.tool_list.get(tools)
+            tool_to_use = self.tool_list.get(tools[0])
             search_query = await tool_to_use(new_query)
+            print("Search_query: ", search_query)
             docs = await self.vector_db.get_docs(
                 new_query, self.embedding_model, top_docs=kwds.get("top_docs", 5), search_query=search_query
             )
