@@ -5,7 +5,6 @@ import Markdown from "markdown-to-jsx";
 import { buildContext, getRelevanceScore } from "@/utils/functions";
 import Modal from "./Modal";
 import DisplayMessage from "./DisplayMessage";
-import Spinner from "./Spinner";
 import TextBox, { ToolType } from "./TextBox";
 import SkeletonLoader from "./SkeletonLoader";
 
@@ -32,12 +31,18 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 	};
 
 	const stripToolText = (message: string, selectedTools: ToolType[]) => {
-		if (selectedTools) {
-			const toolNames = selectedTools.map((tool) => tool.name);
-			const toolPattern = new RegExp(`@${toolNames.join("|")}\\s*`, "g");
-			return message.replace(toolPattern, "").trim();
+		const toolNames = selectedTools.map((tool) => tool.name);
+
+		if (toolNames.length === 0) {
+			return message.trim();
 		}
-		return message;
+
+		const escapedToolNames = toolNames.map((name) =>
+			name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+		);
+		const toolPattern = new RegExp(`@(${escapedToolNames.join("|")})`, "g");
+
+		return message.replace(toolPattern, "").replace(/\s+/g, " ").trim();
 	};
 
 	const streamQueryResponse = useCallback(
@@ -47,6 +52,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({ currentChat, onSendMessage }) => {
 					userMessage,
 					selectedTools
 				);
+
+				if (!strippedMessage) {
+					return alert("Please enter a valid message!");
+				}
+
 				onSendMessage({ role: "user", content: strippedMessage });
 
 				setLoading(true);
