@@ -118,12 +118,6 @@ h6 {
 	}
 }
 
-.tools-popup {
-	animation: fadeInAndGrow 500ms ease-in-out;
-	transition: all 0.3s ease-in-out;
-	overflow: hidden;
-}
-
 @keyframes fadeInAndGrow {
 	0% {
 		opacity: 0;
@@ -133,4 +127,31 @@ h6 {
 		opacity: 1;
 		height: auto;
 	}
+}
+
+.text-box {
+	anchor-name: --text-box;
+	z-index: 1;
+}
+
+.text-input {
+	anchor-name: --text-input;
+	color: transparent;
+	caret-color: white;
+}
+
+.tools-popup {
+	position-anchor: --text-box;
+	position: absolute;
+	bottom: 100%;
+	right: anchor(right);
+	z-index: 2;
+}
+
+.formatted-input {
+	position-anchor: --text-input;
+	position: absolute;
+	bottom: anchor(center);
+	left: calc(anchor(left) + 1rem);
+	top: 1.55rem;
 }
