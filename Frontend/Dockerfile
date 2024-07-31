@@ -23,4 +23,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Run the application.
-ENTRYPOINT ["/bin/sh", "-c", "/app/init.sh /app/.next && npm start"]
+ENTRYPOINT ["/bin/sh", "-c", "npm start"]
