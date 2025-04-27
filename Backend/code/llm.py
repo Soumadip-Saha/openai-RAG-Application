@@ -6,9 +6,10 @@ from typing import AsyncGenerator
 
 
 class LLMClient():
-    def __init__(self, model_name: str, api_key: str) -> None:
+    def __init__(self, model_name: str, api_key: str, base_url :str = None) -> None:
         self.client = AsyncOpenAI(
-            api_key=api_key
+            api_key=api_key,
+            base_url=base_url
         )
         self.model_name = model_name
 
